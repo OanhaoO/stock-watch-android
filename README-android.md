@@ -6,7 +6,7 @@
 
 ## 当前进度
 
-- [x] Gradle 工程骨架（AGP 8.4.3 / Kotlin 1.9.24 / Gradle 8.7 / JDK 17）
+- [x] Gradle 工程骨架（AGP 8.4.2 / Kotlin 1.9.24 / Gradle 8.7 / JDK 17）
 - [x] GitHub Actions 出包流水线
 - [ ] 行情与均线内核（`core`）
 - [ ] 规则引擎与去重（乖离 / 交叉 / 涨跌幅 / 代理 / 做T 两档）
