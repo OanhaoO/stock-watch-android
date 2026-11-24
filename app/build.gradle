@@ -3,6 +3,11 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 }
 
+repositories {
+    google()
+    mavenCentral()
+}
+
 def ksPath = project.findProperty('RELEASE_STORE_FILE') ?: '../keystore.p12'
 def ksFile = file(ksPath)
 
