@@ -1,0 +1,16 @@
+# 构建产物与本机配置
+.gradle/
+build/
+app/build/
+local.properties
+captures/
+*.log
+
+# IDE
+.idea/
+*.iml
+.kotlin/
+
+# 临时证书材料（正式签名库 keystore.p12 是故意入库的，保证 Actions 出的包能覆盖安装）
+*.pem
+*.jks.backup
