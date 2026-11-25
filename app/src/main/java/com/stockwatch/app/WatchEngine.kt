@@ -55,8 +55,7 @@ class WatchEngine(
     private var overviewAt = 0L
     private var overviewRows: List<Map<String, Any?>> = emptyList()
 
-    @Synchronized(cycleLock)
-    fun runCycle(cfg: WatchConfig): Int {
+    fun runCycle(cfg: WatchConfig): Int = synchronized(cycleLock) {
         val now = clock()
         val today = MarketTime.day(now)
         var pushed = 0
@@ -124,8 +123,7 @@ class WatchEngine(
         return pushed
     }
 
-    @Synchronized(overviewLock)
-    fun overview(cfg: WatchConfig, force: Boolean = false): List<Map<String, Any?>> {
+    fun overview(cfg: WatchConfig, force: Boolean = false): List<Map<String, Any?>> = synchronized(overviewLock) {
         val now = System.currentTimeMillis()
         if (!force && overviewAt > 0L && now - overviewAt < OVERVIEW_TTL_MS) return overviewRows
         val rows = collect(cfg, asLive = true)
@@ -134,9 +132,8 @@ class WatchEngine(
         return overviewRows
     }
 
-    @Synchronized(overviewLock)
     fun invalidateOverview() {
-        overviewAt = 0L
+        synchronized(overviewLock) { overviewAt = 0L }
     }
 
     fun recentAlerts(limit: Int = 30): List<AlertEntry> = state.recent(limit)
