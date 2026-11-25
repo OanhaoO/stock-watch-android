@@ -392,7 +392,7 @@ class MainActivity : Activity() {
         setPadding(dp(10), 0, dp(10), 0)
         val fill = if (primary) 0xFF72E3CB.toInt() else 0x18FFFFFF
         val stroke = if (primary) null else 0x55FFFFFF
-        setBackgroundDrawable(
+        this.setBackgroundDrawable(
             RippleDrawable(
                 ColorStateList.valueOf(if (primary) 0x33000000 else 0x22FFFFFF),
                 rounded(fill, dp(14), stroke),
@@ -579,13 +579,13 @@ class MainActivity : Activity() {
     }
 
     private fun surface(): LinearLayout = LinearLayout(this).apply {
-        background = rounded(getColor(R.color.surface), dp(18), getColor(R.color.outline))
+        this.setBackgroundDrawable(rounded(getColor(R.color.surface), dp(18), getColor(R.color.outline)))
         elevation = dp(1).toFloat()
     }
 
     private fun ripple() {
         val content = rounded(getColor(R.color.surface), dp(18), getColor(R.color.outline))
-        setBackgroundDrawable(
+        this.setBackgroundDrawable(
             RippleDrawable(
                 ColorStateList.valueOf(getColor(R.color.ripple)),
                 content,
