@@ -2,6 +2,8 @@ package com.stockwatch.app.core
 
 import java.io.File
 
+data class AlertEntry(val key: String, val day: String, val ts: Long)
+
 class AlertState(
     private val file: File? = null,
     private val nowMillis: () -> Long = System::currentTimeMillis,
@@ -37,6 +39,22 @@ class AlertState(
     fun setZone(key: String, day: String, zone: String) {
         zones[key] = ZoneRecord(day, zone, nowMillis())
         save()
+    }
+
+    @Synchronized
+    fun recent(limit: Int = 30): List<AlertEntry> {
+        val entries = alerts.map { (key, record) -> AlertEntry(key, record.day, record.ts) }.toMutableList()
+        val zonePattern = Regex("(below|above)(\\d)")
+        zones.forEach { (key, record) ->
+            val match = zonePattern.matchEntire(record.zone) ?: return@forEach
+            val code = key.substringBefore('|')
+            entries += AlertEntry(
+                "$code|t_${match.groupValues[1]}|第${match.groupValues[2]}档",
+                record.day,
+                record.ts,
+            )
+        }
+        return entries.sortedByDescending { it.ts }.take(limit.coerceAtLeast(0))
     }
 
     private fun load() {

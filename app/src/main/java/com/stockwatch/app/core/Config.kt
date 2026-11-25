@@ -50,6 +50,8 @@ data class WatchItem(
     val code: String,
     val symbol: String,
     val type: String = "auto",
+    val name: String = "",
+    val enabled: Boolean = true,
     val proxy: String = "",
     val bias: BiasOverrides = BiasOverrides(),
     val cross: CrossConfig? = null,
@@ -98,6 +100,8 @@ fun parseWatchConfig(text: String): WatchConfig {
             code = code,
             symbol = symbol,
             type = (row["type"]?.asString() ?: "auto").lowercase(Locale.ROOT),
+            name = row["name"]?.asString().orEmpty().trim(),
+            enabled = row["enabled"]?.asBoolean() ?: true,
             proxy = row["proxy"]?.asString().orEmpty().trim(),
             bias = parseBiasOverrides(row),
             cross = if ("cross" in row.fields) parseCross(row["cross"], cross) else null,
@@ -126,6 +130,71 @@ fun parseWatchConfig(text: String): WatchConfig {
 }
 
 fun loadWatchConfig(file: File): WatchConfig = parseWatchConfig(file.readText())
+
+fun defaultWatchConfigMap(): Map<String, Any?> = watchConfigMap(WatchConfig())
+
+fun watchConfigMap(cfg: WatchConfig): Map<String, Any?> = mapOf(
+    "poll_seconds" to cfg.pollSeconds,
+    "sessions" to cfg.sessions.map { listOf(formatTime(it.start), formatTime(it.end)) },
+    "kline_bars" to cfg.klineBars,
+    "nav_bars" to cfg.navBars,
+    "bias_mas" to cfg.biasMas,
+    "bias_enabled" to cfg.biasEnabled,
+    "bias_upper_pct" to cfg.biasUpperPct,
+    "bias_lower_pct" to cfg.biasLowerPct,
+    "bias_cooldown_minutes" to cfg.biasCooldownMinutes,
+    "min_history_bars" to cfg.minHistoryBars,
+    "cross" to crossMap(cfg.cross),
+    "change" to changeMap(cfg.change),
+    "t_range" to tRangeMap(cfg.tRange),
+    "proxy" to proxyMap(cfg.proxy),
+    "stocks" to cfg.items.map(::watchItemMap),
+)
+
+private fun watchItemMap(item: WatchItem): Map<String, Any?> = buildMap<String, Any?> {
+    put("code", item.code)
+    put("type", item.type)
+    if (item.name.isNotEmpty()) put("name", item.name)
+    if (!item.enabled) put("enabled", false)
+    if (item.proxy.isNotEmpty()) put("proxy", item.proxy)
+    item.bias.biasMas?.let { put("bias_mas", it) }
+    item.bias.biasUpperPct?.let { put("bias_upper_pct", it) }
+    item.bias.biasLowerPct?.let { put("bias_lower_pct", it) }
+    item.bias.biasCooldownMinutes?.let { put("bias_cooldown_minutes", it) }
+    item.bias.minHistoryBars?.let { put("min_history_bars", it) }
+    item.cross?.let { put("cross", crossMap(it)) }
+    item.change?.let { put("change", changeMap(it)) }
+    item.tRange?.let { put("t_range", tRangeMap(it)) }
+    item.proxyRules?.let { put("proxy_rules", proxyMap(it)) }
+}
+
+private fun crossMap(value: CrossConfig): Map<String, Any?> = mapOf(
+    "enabled" to value.enabled,
+    "short" to value.short,
+    "long" to value.long,
+)
+
+private fun changeMap(value: ChangeConfig): Map<String, Any?> = mapOf(
+    "enabled" to value.enabled,
+    "upper_pct" to value.upperPct,
+    "lower_pct" to value.lowerPct,
+    "cooldown_minutes" to value.cooldownMinutes,
+)
+
+private fun tRangeMap(value: TRangeConfig): Map<String, Any?> = mapOf(
+    "enabled" to value.enabled,
+    "base" to value.base,
+    "dev1_pct" to value.dev1Pct,
+    "dev2_pct" to value.dev2Pct,
+)
+
+private fun proxyMap(value: ProxyConfig): Map<String, Any?> = mapOf(
+    "bias_mas" to value.biasMas,
+    "upper_pct" to value.upperPct,
+    "lower_pct" to value.lowerPct,
+)
+
+private fun formatTime(value: LocalTime): String = value.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
 
 fun itemBiasMas(item: WatchItem, cfg: WatchConfig): List<Int> = item.bias.biasMas ?: cfg.biasMas
 
