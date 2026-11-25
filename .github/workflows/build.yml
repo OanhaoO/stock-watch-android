@@ -29,7 +29,23 @@ jobs:
           cache-disabled: true
 
       - name: 单元测试（纯 Kotlin 内核，跑在 JVM 上）
-        run: gradle --no-daemon test
+        run: |
+          set +e
+          gradle --no-daemon test 2>&1 | tee "$RUNNER_TEMP/stock-watch-test.log"
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            python - "$RUNNER_TEMP/stock-watch-test.log" <<'PY'
+          import sys
+          from pathlib import Path
+
+          for raw in Path(sys.argv[1]).read_text(encoding="utf-8", errors="replace").splitlines():
+              line = raw.strip()
+              if line.startswith("e:") or "FAILED" in line or "AssertionError" in line or "What went wrong" in line:
+                  message = line.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+                  print(f"::error title=Gradle 测试失败::{message}")
+          PY
+          fi
+          exit "$status"
 
       - name: 编译签名 release APK
         run: gradle --no-daemon assembleRelease

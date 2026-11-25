@@ -142,8 +142,9 @@ class FundFeed(
             info = fetched.copy(at = stamp)
             meta[code] = info
         }
+        val currentInfo = info ?: return null
         var entry = history[code]
-        if (force || entry == null || entry.adj.lastOrNull()?.date != info.navDate) {
+        if (force || entry == null || entry.adj.lastOrNull()?.date != currentInfo.navDate) {
             val (adj, raw) = historyFetcher(code, bars)
             if (adj.isNotEmpty()) {
                 entry = FundHistoryRecord(adj, raw)
@@ -155,15 +156,15 @@ class FundFeed(
         val safeEntry = entry
         val price = safeEntry.raw.last().close
         val prevClose = safeEntry.raw.getOrNull(safeEntry.raw.lastIndex - 1)?.close
-        val changePct = info.pct ?: if (prevClose != null && prevClose != 0.0) {
+        val changePct = currentInfo.pct ?: if (prevClose != null && prevClose != 0.0) {
             (price / prevClose - 1.0) * 100.0
         } else {
             0.0
         }
-        val date = info.navDate
+        val date = currentInfo.navDate
         return FundSnapshot(
-            name = info.name,
-            ftype = info.ftype,
+            name = currentInfo.name,
+            ftype = currentInfo.ftype,
             code = code,
             price = price,
             prevClose = prevClose,
