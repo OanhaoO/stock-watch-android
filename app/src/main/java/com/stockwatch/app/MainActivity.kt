@@ -392,10 +392,12 @@ class MainActivity : Activity() {
         setPadding(dp(10), 0, dp(10), 0)
         val fill = if (primary) 0xFF72E3CB.toInt() else 0x18FFFFFF
         val stroke = if (primary) null else 0x55FFFFFF
-        setBackgroundDrawable(RippleDrawable(
-            ColorStateList.valueOf(if (primary) 0x33000000 else 0x22FFFFFF),
-            rounded(fill, dp(14), stroke),
-            null,
+        setBackgroundDrawable(
+            RippleDrawable(
+                ColorStateList.valueOf(if (primary) 0x33000000 else 0x22FFFFFF),
+                rounded(fill, dp(14), stroke),
+                null,
+            ),
         )
         setTextColor(if (primary) 0xFF073B3A.toInt() else getColor(R.color.hero_text))
         val drawable = getDrawable(icon)?.mutate()?.apply {
@@ -583,10 +585,12 @@ class MainActivity : Activity() {
 
     private fun ripple() {
         val content = rounded(getColor(R.color.surface), dp(18), getColor(R.color.outline))
-        setBackgroundDrawable(RippleDrawable(
-            ColorStateList.valueOf(getColor(R.color.ripple)),
-            content,
-            rounded(0x22000000.toInt(), dp(18)),
+        setBackgroundDrawable(
+            RippleDrawable(
+                ColorStateList.valueOf(getColor(R.color.ripple)),
+                content,
+                rounded(0x22000000.toInt(), dp(18)),
+            ),
         )
     }
 
