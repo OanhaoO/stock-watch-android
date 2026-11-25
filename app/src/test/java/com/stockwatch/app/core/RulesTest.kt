@@ -58,7 +58,7 @@ class RulesTest {
         val previous = tLevels(item, snapshot(10.0, prevClose = 20.0), cfg.copy(tRange = cfg.tRange.copy(base = 0.0)))!!
         assertEquals(20.0, previous.base, 0.0)
         assertEquals("昨收", previous.source)
-        assertNull(tLevels(item, snapshot(10.0), cfg.copy(tRange = cfg.tRange.copy(base = -1.0))))
+        assertNull(tLevels(item, snapshot(10.0, prevClose = null), cfg.copy(tRange = cfg.tRange.copy(base = -1.0))))
         assertNull(
             tLevels(
                 item,

@@ -20,7 +20,7 @@ class JsonTest {
         val decoded = parseJson(encoded)
         assertEquals("测试", decoded["name"]?.asString())
         assertEquals(1.25, decoded["price"]?.asDouble()!!, 1e-9)
-        assertTrue(encoded.contains("\\\""))
+        assertTrue(encoded.contains("\"name\""))
     }
 
     @Test

@@ -36,8 +36,10 @@ data class FundSnapshot(
 
 private data class FundHistoryRecord(val adj: List<PriceBar>, val raw: List<PriceBar>)
 
+private fun JsonElement?.numericValue(): Double? = asDouble() ?: asString()?.toDoubleOrNull()
+
 fun positiveDouble(value: JsonElement?): Double? =
-    value?.asDouble()?.takeIf { it > 0.0 }
+    value.numericValue()?.takeIf { it > 0.0 }
 
 internal fun parseFundInfo(raw: String): FundInfo? {
     val row = parseJson(raw)["Datas"]?.asObject() ?: return null
@@ -47,7 +49,7 @@ internal fun parseFundInfo(raw: String): FundInfo? {
         ftype = row["FTYPE"]?.asString().orEmpty(),
         navDate = row["FSRQ"]?.asString().orEmpty().replace("-", ""),
         nav = positiveDouble(row["DWJZ"]),
-        pct = row["RZDF"]?.asDouble(),
+        pct = row["RZDF"].numericValue(),
     )
 }
 
@@ -85,7 +87,7 @@ internal fun rebuildFundSeries(rows: List<JsonObject>): Pair<List<PriceBar>, Lis
     for (row in rows.reversed()) {
         val date = row["FSRQ"]?.asString()?.replace("-", "") ?: continue
         val nav = positiveDouble(row["DWJZ"]) ?: continue
-        val pct = row["JZZZL"]?.asDouble()
+        val pct = row["JZZZL"].numericValue()
         if (previousNav != null) {
             factor *= if (pct != null) 1.0 + pct / 100.0 else nav / previousNav
         }

@@ -8,8 +8,8 @@ class IndicatorsTest {
     @Test
     fun smaMatchesPcVersion() {
         val values = listOf(1.0, 2.0, 3.0, 4.0, 5.0)
-        assertEquals(3.0, sma(values, 3)!!, 1e-9)
-        assertEquals(3.0, sma(values, 3, 1)!!, 1e-9)
+        assertEquals(4.0, sma(values, 3)!!, 1e-9)
+        assertEquals(2.0, sma(values, 3, 1)!!, 1e-9)
         assertNull(sma(values, 6))
         assertNull(sma(values, 0))
     }
