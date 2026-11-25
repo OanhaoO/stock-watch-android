@@ -2,6 +2,7 @@ package com.stockwatch.app.core
 
 import java.net.HttpURLConnection
 import java.net.URL
+import java.nio.charset.Charset
 
 object Http {
     const val USER_AGENT = "Mozilla/5.0"

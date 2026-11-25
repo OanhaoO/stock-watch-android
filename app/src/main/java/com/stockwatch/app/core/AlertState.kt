@@ -73,6 +73,6 @@ class AlertState(
         path.writeText(stringifyJson(mapOf("alerts" to alertJson, "t_zone" to zoneJson)))
     }
 
-    private data class AlertRecord(val day: String, val ts: Long, val value: JsonElement?)
+    private data class AlertRecord(val day: String, val ts: Long, val value: Any?)
     private data class ZoneRecord(val day: String, val zone: String, val ts: Long)
 }

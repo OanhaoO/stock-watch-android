@@ -107,7 +107,7 @@ private class JsonParser(private val text: String) {
                     when (val esc = text[pos++]) {
                         '"', '\\', '/' -> out.append(esc)
                         'b' -> out.append('\b')
-                        'f' -> out.append('\f')
+                        'f' -> out.append('\u000C')
                         'n' -> out.append('\n')
                         'r' -> out.append('\r')
                         't' -> out.append('\t')
@@ -231,7 +231,7 @@ private fun StringBuilder.appendQuoted(value: String) {
             '"' -> append("\\\"")
             '\\' -> append("\\\\")
             '\b' -> append("\\b")
-            '\f' -> append("\\f")
+            '\u000C' -> append("\\f")
             '\n' -> append("\\n")
             '\r' -> append("\\r")
             '\t' -> append("\\t")

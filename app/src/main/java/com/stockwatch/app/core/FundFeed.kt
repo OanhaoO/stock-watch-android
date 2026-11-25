@@ -2,7 +2,7 @@ package com.stockwatch.app.core
 
 import java.io.File
 import java.net.URLEncoder
-import kotlin.math.round
+import kotlin.math.roundToLong
 
 const val FUND_BASIC = "https://fundmobapi.eastmoney.com/FundMNewApi/FundMNBasicInformation" +
     "?FCODE={code}&deviceid=1&plat=Iphone&product=EFund&version=6.2.8"
@@ -95,7 +95,7 @@ internal fun rebuildFundSeries(rows: List<JsonObject>): Pair<List<PriceBar>, Lis
     }
     if (adjusted.isEmpty() || raw.isEmpty()) return emptyList<PriceBar>() to emptyList()
     val scale = raw.last().close / adjusted.last().close
-    return adjusted.map { PriceBar(it.date, (it.close * scale).round(6)) } to raw
+    return adjusted.map { PriceBar(it.date, (it.close * scale * 1_000_000).roundToLong() / 1_000_000.0) } to raw
 }
 
 fun fundNavHistory(code: String, bars: Int): Pair<List<PriceBar>, List<PriceBar>> {

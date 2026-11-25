@@ -261,15 +261,9 @@ fun confirmTZone(state: AlertState, action: TZoneAction) {
     if (!action.rearmed) state.setZone(action.key, action.day, action.zone)
 }
 
-private fun positivePrice(value: Double): Double? = value.takeIf { it.isFinite() && it > 0.0 }
-
 private fun signed(value: Double): String = fixed(value, signed = true)
 
 private fun fixed(value: Double, signed: Boolean = false): String =
     String.format(Locale.US, "%${if (signed) "+" else ""}.2f", value)
 
-private fun fmt(value: Double?, digits: Int? = null): String {
-    if (value == null) return "-"
-    val places = digits ?: if (abs(value) < 10.0) 3 else 2
-    return String.format(Locale.US, "%.${places}f", value)
-}
+private fun positivePrice(value: Double): Double? = value.takeIf { it.isFinite() && it > 0.0 }
