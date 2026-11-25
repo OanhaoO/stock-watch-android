@@ -67,7 +67,7 @@ class Notifier(private val context: Context) {
         if (!notificationsAllowed(channel)) return false
         val id = notificationId("$group|$channel|$dedupKey")
         val builder = Notification.Builder(context, channel)
-            .setSmallIcon(android.R.drawable.ic_menu_compass)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(content.title)
             .setContentText(content.body.lineSequence().firstOrNull().orEmpty())
             .setStyle(Notification.BigTextStyle().bigText(content.body))
@@ -83,7 +83,7 @@ class Notifier(private val context: Context) {
     }
 
     fun statusNotification(text: String): Notification = Notification.Builder(context, NotifierChannels.STATUS)
-        .setSmallIcon(android.R.drawable.ic_menu_compass)
+        .setSmallIcon(R.drawable.ic_notification)
         .setContentTitle("盯盘助手")
         .setContentText(text)
         .setContentIntent(contentIntent(STATUS_ID))
