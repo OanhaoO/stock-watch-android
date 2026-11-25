@@ -35,6 +35,11 @@ class MainActivity : Activity() {
         configStore = ConfigStore(File(filesDir, "config.json"))
         configStore.ensureDefault()
         setContentView(buildContent())
+        if (savedInstanceState == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), NOTIFICATION_REQUEST)
+        }
     }
 
     override fun onResume() {
@@ -64,6 +69,16 @@ class MainActivity : Activity() {
             },
         )
 
+        root.addView(
+            TextView(this).apply {
+                val info = packageManager.getPackageInfo(packageName, 0)
+                text = "版本 ${info.versionName} · Android ${Build.VERSION.RELEASE} · ${Build.MANUFACTURER}"
+                textSize = 12f
+                gravity = Gravity.CENTER
+                setPadding(0, 0, 0, dp(16))
+            },
+        )
+
         serviceStatus = statusRow(root, "前台服务")
         notificationStatus = statusRow(root, "通知权限")
         batteryStatus = statusRow(root, "电池优化")
@@ -78,7 +93,7 @@ class MainActivity : Activity() {
             refreshStatus()
         }
         root.addButton("通知权限与测试通知") {
-            if (notifier.notificationsAllowed()) {
+            if (notifier.notificationsAllowed(NotifierChannels.SYSTEM)) {
                 val sent = notifier.post(
                     NotificationContent("本地通知测试", "通知通道正常，可以接收做T、乖离和涨跌幅提醒。"),
                     NotifierChannels.SYSTEM,
