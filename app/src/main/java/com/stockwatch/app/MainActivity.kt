@@ -582,10 +582,11 @@ class MainActivity : Activity() {
     }
 
     private fun ripple() {
-        foreground = RippleDrawable(
+        val content = rounded(getColor(R.color.surface), dp(18), getColor(R.color.outline))
+        background = RippleDrawable(
             ColorStateList.valueOf(getColor(R.color.ripple)),
-            null,
-            rounded(getColor(R.color.surface), dp(18)),
+            content,
+            rounded(0x22000000.toInt(), dp(18)),
         )
     }
 
