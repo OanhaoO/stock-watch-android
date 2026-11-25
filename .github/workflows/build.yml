@@ -36,13 +36,31 @@ jobs:
           if [ "$status" -ne 0 ]; then
             python - "$RUNNER_TEMP/stock-watch-test.log" <<'PY'
           import sys
+          import xml.etree.ElementTree as ET
           from pathlib import Path
+
+          def escape(value):
+              return value.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
 
           for raw in Path(sys.argv[1]).read_text(encoding="utf-8", errors="replace").splitlines():
               line = raw.strip()
               if line.startswith("e:") or "FAILED" in line or "AssertionError" in line or "What went wrong" in line:
-                  message = line.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
-                  print(f"::error title=Gradle 测试失败::{message}")
+                  print(f"::error title=Gradle 测试失败::{escape(line)}")
+
+          for report in Path("app/build/test-results/test").glob("TEST-*.xml"):
+              try:
+                  root = ET.parse(report).getroot()
+              except ET.ParseError:
+                  continue
+              for case in root.iter("testcase"):
+                  failure = case.find("failure")
+                  if failure is None:
+                      failure = case.find("error")
+                  if failure is None:
+                      continue
+                  name = f'{case.get("classname", "test")}.{case.get("name", "unknown")}'
+                  detail = (failure.text or failure.get("message", "测试失败")).strip()
+                  print(f"::error title={escape(name)}::{escape(detail)}")
           PY
           fi
           exit "$status"

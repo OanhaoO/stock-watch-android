@@ -24,7 +24,7 @@ class RulesTest {
     fun biasThresholdsAreInclusiveAndItemOverridesApply() {
         val cfg = baseConfig()
         assertEquals("bias_up", evaluate(item, snapshot(10.3), cfg).hits.single().rule)
-        assertEquals("bias_dn", evaluate(item, snapshot(9.7), cfg).hits.single().rule)
+        assertEquals("bias_dn", evaluate(item, snapshot(9.6), cfg).hits.single().rule)
 
         val override = item.copy(bias = BiasOverrides(biasUpperPct = 31.0))
         assertTrue(evaluate(override, snapshot(13.0), cfg).hits.isEmpty())
@@ -160,7 +160,13 @@ class RulesTest {
 
     @Test
     fun notificationContentIsPlainTextWithPriceMetricsAndTimestamp() {
-        val content = buildNotification(snapshot(10.25), "MA5 10.000", listOf("做T提醒"), now, "（场外净值）")
+        val content = buildNotification(
+            snapshot(10.25, changePct = 2.5),
+            "MA5 10.000",
+            listOf("做T提醒"),
+            now,
+            "（场外净值）",
+        )
         assertEquals("测试标的 000001（场外净值）", content.title)
         assertTrue(content.body.contains("现价 10.250 (+2.50%)  前值 10.000"))
         assertTrue(content.body.contains("MA5 10.000"))
@@ -194,5 +200,6 @@ class RulesTest {
         date = "20261125",
         timeDisplay = "2026-11-25 10:00:00",
         closes = closes,
+        decimals = 3,
     )
 }

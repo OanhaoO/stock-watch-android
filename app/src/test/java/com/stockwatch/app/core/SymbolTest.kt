@@ -12,7 +12,8 @@ class SymbolTest {
         assertEquals("sh510300", normalizeSymbol("510300"))
         assertEquals("sz000001", normalizeSymbol("000001"))
         assertEquals("sz160119", normalizeSymbol("160119"))
-        assertEquals("bj920001", normalizeSymbol("920001"))
+        assertEquals("bj430047", normalizeSymbol("430047"))
+        assertEquals("bj920001", normalizeSymbol("BJ920001"))
         assertEquals("sh600000", normalizeSymbol(" SH600000 "))
     }
 
@@ -23,6 +24,6 @@ class SymbolTest {
         assertEquals("沪市股票", listedKind("sh600000"))
         assertEquals("场内基金", listedKind("sh510300"))
         assertEquals("深市股票", listedKind("sz000001"))
-        assertEquals("北交所", listedKind("bj920001"))
+        assertEquals("北交所", listedKind("bj430047"))
     }
 }

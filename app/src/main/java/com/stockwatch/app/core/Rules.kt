@@ -184,7 +184,7 @@ fun evaluateProxy(item: WatchItem, proxySnap: MarketSnapshot, cfg: WatchConfig):
     for (n in config.biasMas) {
         val ma = sma(proxySnap.closes, n) ?: continue
         val bias = (proxySnap.price - ma) / ma * 100.0
-        lines += "MA$n ${fmt(ma)} | 乖离 ${signed(bias)}%"
+        lines += "MA$n ${fmt(ma, proxySnap.decimals)} | 乖离 ${signed(bias)}%"
         when {
             bias >= config.upperPct -> hits += AlertHit(
                 "proxy_up",
