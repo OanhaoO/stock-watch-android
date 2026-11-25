@@ -50,6 +50,7 @@ class KlineFeed(
         loadCache()
     }
 
+    @Synchronized
     fun closes(symbol: String, count: Int): List<PriceBar> {
         if (count <= 0) return emptyList()
         val record = mem[symbol]

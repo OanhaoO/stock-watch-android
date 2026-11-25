@@ -135,6 +135,7 @@ class FundFeed(
         loadCache()
     }
 
+    @Synchronized
     fun snapshot(code: String, bars: Int = 130, force: Boolean = false): FundSnapshot? {
         val stamp = nowMillis()
         var info = meta[code]

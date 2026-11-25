@@ -26,6 +26,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".PanelActivity"
+            android:exported="false"
+            android:label="盯盘配置面板" />
+
         <service
             android:name=".WatchService"
             android:exported="false"

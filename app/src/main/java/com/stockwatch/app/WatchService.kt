@@ -11,7 +11,6 @@ import com.stockwatch.app.core.MarketTime
 import com.stockwatch.app.core.NotificationContent
 import com.stockwatch.app.core.inSession
 import com.stockwatch.app.core.secondsToNextSession
-import java.io.File
 
 class WatchService : Service() {
     private lateinit var notifier: Notifier
@@ -28,9 +27,9 @@ class WatchService : Service() {
     override fun onCreate() {
         super.onCreate()
         notifier = Notifier(this)
-        configStore = ConfigStore(File(filesDir, "config.json"))
+        configStore = WatchRuntime.store(this)
         configStore.ensureDefault()
-        engine = WatchEngine(filesDir, notifier)
+        engine = WatchRuntime.engine(this)
         startForegroundStatus("正在启动盯盘服务")
         acquireWakeLock()
         running = true
@@ -53,27 +52,33 @@ class WatchService : Service() {
         while (running) {
             try {
                 val cfg = configStore.load()
-                if (cfg.items.isEmpty()) {
-                    setStatus("未配置标的，请先在面板添加")
+                val activeCount = cfg.items.count { it.enabled }
+                if (activeCount == 0) {
+                    setStatus("未配置或未启用标的，请先在面板添加")
                     waitMillis(60_000)
                     continue
                 }
                 val now = MarketTime.now()
                 if (!inSession(now, cfg.sessions)) {
                     val seconds = secondsToNextSession(sessions = cfg.sessions, now = now)
-                    setStatus("非交易时段，等待下次开盘（${cfg.items.size} 个标的）")
+                    setStatus("非交易时段，等待下次开盘（$activeCount 个标的）")
                     waitMillis(seconds * 1_000)
                     continue
                 }
-                setStatus("盯盘中 · ${cfg.items.size} 个标的 · 每 ${cfg.pollSeconds} 秒")
+                setStatus("盯盘中 · $activeCount 个标的 · 每 ${cfg.pollSeconds} 秒")
                 val pushed = engine.runCycle(cfg)
+                WatchRuntime.recordCycle(pushed, now)
                 setStatus(
-                    "盯盘中 · ${cfg.items.size} 个标的" +
+                    "盯盘中 · $activeCount 个标的" +
                         if (pushed > 0) " · 本轮提醒 $pushed 条" else "",
                 )
                 waitMillis(cfg.pollSeconds.coerceAtLeast(5L) * 1_000)
+            } catch (_: InterruptedException) {
+                break
             } catch (exc: Exception) {
+                if (!running) break
                 Log.e(TAG, "本轮异常", exc)
+                WatchRuntime.recordError("${exc.javaClass.simpleName}: ${exc.message ?: "未知错误"}")
                 setStatus("运行异常，稍后重试")
                 reportError(exc)
                 waitMillis(30_000)
@@ -82,6 +87,7 @@ class WatchService : Service() {
     }
 
     private fun reportError(exc: Exception) {
+        if (!running) return
         val now = System.currentTimeMillis()
         if (now - lastErrorAt < 30 * 60_000L) return
         lastErrorAt = now
@@ -97,6 +103,7 @@ class WatchService : Service() {
     }
 
     private fun setStatus(text: String) {
+        if (!running) return
         statusText = text
         notifier.updateStatus(text)
     }

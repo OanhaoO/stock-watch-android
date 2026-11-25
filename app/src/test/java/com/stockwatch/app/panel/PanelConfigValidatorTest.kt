@@ -1,6 +1,7 @@
 package com.stockwatch.app.panel
 
 import com.stockwatch.app.core.CrossConfig
+import com.stockwatch.app.core.JsonElement
 import com.stockwatch.app.core.asObject
 import com.stockwatch.app.core.itemCross
 import com.stockwatch.app.core.itemTRange
@@ -175,4 +176,7 @@ class PanelConfigValidatorTest {
         parseJson(json),
         parseJson(previous).asObject()!!.fields,
     )
+
+    private fun validate(json: String, previous: Map<String, JsonElement>): PanelConfigResult =
+        PanelConfigValidator.validate(parseJson(json), previous)
 }

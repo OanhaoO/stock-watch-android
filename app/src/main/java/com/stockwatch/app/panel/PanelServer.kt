@@ -17,6 +17,7 @@ import java.net.SocketException
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.RejectedExecutionException
+import java.util.UUID
 
 data class PanelRequest(
     val method: String,
@@ -58,6 +59,8 @@ class PanelServer(
     private var acceptThread: Thread? = null
 
     val isRunning: Boolean get() = running
+    val accessToken: String = UUID.randomUUID().toString().replace("-", "") +
+        UUID.randomUUID().toString().replace("-", "")
 
     @Synchronized
     fun start() {
@@ -122,6 +125,10 @@ class PanelServer(
                     return
                 }
                 val path = request.target.substringBefore('?')
+                if (path.startsWith("/api/") && request.headers["x-panel-token"] != accessToken) {
+                    writeResponse(socket.getOutputStream(), PanelResponse.error(403, "本地面板凭证无效"))
+                    return
+                }
                 val response = when {
                     request.method == "GET" && path in STATIC_PATHS -> PanelResponse(
                         200,
@@ -133,10 +140,16 @@ class PanelServer(
                 }
                 writeResponse(socket.getOutputStream(), response)
             } catch (exc: HttpException) {
-                writeResponse(socket.getOutputStream(), PanelResponse.error(exc.status, exc.message ?: "请求无效"))
+                try {
+                    writeResponse(socket.getOutputStream(), PanelResponse.error(exc.status, exc.message ?: "请求无效"))
+                } catch (_: Exception) {
+                }
             } catch (exc: Exception) {
                 Log.e(TAG, "处理本地面板请求失败", exc)
-                writeResponse(socket.getOutputStream(), PanelResponse.error(500, "面板服务异常"))
+                try {
+                    writeResponse(socket.getOutputStream(), PanelResponse.error(500, "面板服务异常"))
+                } catch (_: Exception) {
+                }
             }
         }
     }
@@ -198,7 +211,9 @@ class PanelServer(
             "Content-Type: ${response.contentType}\r\n" +
             "Content-Length: ${response.body.size}\r\n" +
             "Cache-Control: no-store\r\n" +
+            "Referrer-Policy: no-referrer\r\n" +
             "X-Content-Type-Options: nosniff\r\n" +
+            "Content-Security-Policy: default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; img-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'\r\n" +
             "Connection: close\r\n\r\n"
         output.write(headers.toByteArray(Charsets.ISO_8859_1))
         output.write(response.body)
@@ -209,7 +224,7 @@ class PanelServer(
 
     companion object {
         const val DEFAULT_PORT = 8760
-        private const val LOOPBACK = "127.0.0.1"
+        const val LOOPBACK = "127.0.0.1"
         private const val MAX_HEADER_BYTES = 16 * 1024
         private const val MAX_BODY_BYTES = 200 * 1024
         private val STATIC_PATHS = setOf("/", "/index.html", "/panel.html")

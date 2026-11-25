@@ -18,7 +18,6 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import com.stockwatch.app.core.NotificationContent
-import java.io.File
 import java.util.Locale
 
 class MainActivity : Activity() {
@@ -32,7 +31,7 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         notifier = Notifier(this)
-        configStore = ConfigStore(File(filesDir, "config.json"))
+        configStore = WatchRuntime.store(this)
         configStore.ensureDefault()
         setContentView(buildContent())
         if (savedInstanceState == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
@@ -91,6 +90,9 @@ class MainActivity : Activity() {
         root.addButton("停止盯盘") {
             stopService(Intent(this, WatchService::class.java))
             refreshStatus()
+        }
+        root.addButton("打开配置面板") {
+            startActivity(Intent(this, PanelActivity::class.java))
         }
         root.addButton("通知权限与测试通知") {
             if (notifier.notificationsAllowed(NotifierChannels.SYSTEM)) {
@@ -152,7 +154,8 @@ class MainActivity : Activity() {
             "电池优化：未豁免"
         }
         configStatus.text = try {
-            "当前配置：${configStore.load().items.size} 个标的"
+            val cfg = configStore.load()
+            "当前配置：${cfg.items.count { it.enabled }} 个启用 / ${cfg.items.size} 个标的"
         } catch (exc: Exception) {
             "当前配置：读取失败（${exc.message}）"
         }
